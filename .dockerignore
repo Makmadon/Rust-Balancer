@@ -1,0 +1,7 @@
+target/
+.git/
+.github/
+.agents/
+*.md
+Dockerfile
+docker-compose.yml

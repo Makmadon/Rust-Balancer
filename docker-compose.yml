@@ -1,0 +1,60 @@
+services:
+  rust-balancer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rust-balancer
+    ports:
+      - "8080:8080"
+    environment:
+      - BALANCER_CONFIG=/app/config/balancer.toml
+      - RUST_LOG=rust_balancer=info,axum=info
+    depends_on:
+      - users-backend-1
+      - users-backend-2
+      - orders-backend-1
+      - orders-backend-2
+      - payments-backend-1
+      - payments-backend-2
+    networks:
+      - balancer-net
+
+  users-backend-1:
+    image: hashicorp/http-echo:1.0
+    command: ["-listen=:3001", "-text={\"service\":\"users\",\"node\":\"users-backend-1\",\"status\":\"healthy\"}"]
+    networks:
+      - balancer-net
+
+  users-backend-2:
+    image: hashicorp/http-echo:1.0
+    command: ["-listen=:3002", "-text={\"service\":\"users\",\"node\":\"users-backend-2\",\"status\":\"healthy\"}"]
+    networks:
+      - balancer-net
+
+  orders-backend-1:
+    image: hashicorp/http-echo:1.0
+    command: ["-listen=:4001", "-text={\"service\":\"orders\",\"node\":\"orders-backend-1\",\"status\":\"healthy\"}"]
+    networks:
+      - balancer-net
+
+  orders-backend-2:
+    image: hashicorp/http-echo:1.0
+    command: ["-listen=:4002", "-text={\"service\":\"orders\",\"node\":\"orders-backend-2\",\"status\":\"healthy\"}"]
+    networks:
+      - balancer-net
+
+  payments-backend-1:
+    image: hashicorp/http-echo:1.0
+    command: ["-listen=:5001", "-text={\"service\":\"payments\",\"node\":\"payments-backend-1\",\"status\":\"healthy\"}"]
+    networks:
+      - balancer-net
+
+  payments-backend-2:
+    image: hashicorp/http-echo:1.0
+    command: ["-listen=:5002", "-text={\"service\":\"payments\",\"node\":\"payments-backend-2\",\"status\":\"healthy\"}"]
+    networks:
+      - balancer-net
+
+networks:
+  balancer-net:
+    driver: bridge

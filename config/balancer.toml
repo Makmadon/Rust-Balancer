@@ -1,0 +1,61 @@
+listen_addr = "0.0.0.0:8080"
+
+[health_check]
+interval_ms = 5000
+timeout_ms = 2000
+unhealthy_threshold = 2
+healthy_threshold = 2
+
+[ddns]
+enabled = false
+instance_id = "edge-balancer-1"
+hostname = "lb.example.ddns.net"
+ip_check_url = "https://api.ipify.org"
+update_url = "https://ddns.example.com/nic/update"
+interval_ms = 60000
+timeout_ms = 5000
+
+[[services]]
+name = "users-service"
+route_prefix = "/users"
+strip_prefix = true
+strategy = "round_robin"
+health_check_path = "/health"
+
+[[services.backends]]
+url = "http://users-backend-1:3001"
+weight = 1
+
+[[services.backends]]
+url = "http://users-backend-2:3002"
+weight = 1
+
+[[services]]
+name = "orders-service"
+route_prefix = "/orders"
+strip_prefix = true
+strategy = "least_connections"
+health_check_path = "/health"
+
+[[services.backends]]
+url = "http://orders-backend-1:4001"
+weight = 1
+
+[[services.backends]]
+url = "http://orders-backend-2:4002"
+weight = 1
+
+[[services]]
+name = "payments-service"
+route_prefix = "/payments"
+strip_prefix = true
+strategy = "weighted_round_robin"
+health_check_path = "/health"
+
+[[services.backends]]
+url = "http://payments-backend-1:5001"
+weight = 3
+
+[[services.backends]]
+url = "http://payments-backend-2:5002"
+weight = 1
